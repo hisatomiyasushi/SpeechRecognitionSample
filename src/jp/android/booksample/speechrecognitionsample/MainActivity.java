@@ -8,25 +8,43 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends ListActivity implements OnClickListener {
+public class MainActivity extends ListActivity implements OnClickListener, OnInitListener {
 
-    /*
+    /**
      * 音声認識ダイアログを表示するためのインテント、リクエストIDです。
      */
     private static final int REQUEST_SPEECHRECOGNIZE = 1;
-
-    /*
+    
+    /**
+     * 日本語読み上げエンジンのパッケージ名です。
+     */
+    private static final String JAPANESE_SPEECH_ENGINE = "jp.kddilabs.n2tts";
+        
+    /**
      * リストの内容を保持するアダプタオブジェクトです。
      */
     private ArrayAdapter<String> listAdapter;
-    
+
+    /**
+     * TextToSpeechエンジンオブジェクトを保持する変数です。
+     */
+    private TextToSpeech tts;
+
+    /**
+     * TextToSopeechエンジンの初期化が完了したかどうかを示すフラグです。
+     */
+    private boolean ttsInitialized;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +60,8 @@ public class MainActivity extends ListActivity implements OnClickListener {
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         setListAdapter(listAdapter);
         
+        // TextToSpeechオブジェクトを初期化する
+        tts = new TextToSpeech(this, this, JAPANESE_SPEECH_ENGINE);
     }
     
     /**
@@ -60,6 +80,29 @@ public class MainActivity extends ListActivity implements OnClickListener {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    /**
+     * アクティビティが破棄されたタイミングで呼び出されるメソッドです。
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // TextToSpeechをシャットダウンします
+        if (tts != null) {
+            tts.shutdown();
+        }
+    }
+
+    /**
+     * スピーチエンジンが完了したときに呼び出されるメソッドです。
+     */
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            ttsInitialized = true;
+        }
+    }
+    
+    
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -99,6 +142,17 @@ public class MainActivity extends ListActivity implements OnClickListener {
             default:
                 break;
         }
+    }
+    
+    /**
+     * リスト項目のクリックイベントを処理するイベントハンドラです。
+     */
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        if (ttsInitialized) {
+            tts.speak(listAdapter.getItem(position), TextToSpeech.QUEUE_ADD, null);
+        }
+        super.onListItemClick(l, v, position, id);
     }
 
     
