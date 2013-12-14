@@ -12,12 +12,14 @@
 
         <Button
             android:id="@+id/operate_additem"
+            style="android:buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/operate_additem" />
 
         <Button
             android:id="@+id/operate_deleteitem"
+            style="android:buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/operate_deleteitem" />
